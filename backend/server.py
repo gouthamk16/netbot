@@ -8,6 +8,7 @@ app = Flask(__name__)
 CORS(app)
 
 JSON_FILE = "data.json"
+CHAT_HISTORY_FILE = "chat_history.json"
 MAX_ENTRIES = 10  # Limit stored texts to 10
 
 def save_text_to_json(text):
@@ -26,6 +27,10 @@ def save_text_to_json(text):
 
     with open(JSON_FILE, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=4)
+    
+    # Clear chat history when new content is extracted
+    if os.path.exists(CHAT_HISTORY_FILE):
+        os.remove(CHAT_HISTORY_FILE)
 
 @app.route("/store", methods=["POST"])
 def store_text():
@@ -39,18 +44,39 @@ def store_text():
     save_text_to_json(text)
     return jsonify({"message": "Text stored successfully"}), 200
 
-@app.route("/get_text", methods=["GET"])
-def get_stored_text():
-    """Retrieve only the latest stored webpage text."""
+@app.route("/chat", methods=["POST"])
+def handle_chat():
+    """Process chat messages using RAG."""
+    data = request.json
+    question = data.get("question", "")
+
+    if not question:
+        return jsonify({"error": "No question provided"}), 400
+
+    try:
+        retriever = init_ret()
+        response = chat_loop(question, retriever)
+        return jsonify({"response": response}), 200
+    except Exception as e:
+        print(f"Error in chat: {str(e)}")
+        return jsonify({"error": "Failed to process question", "details": str(e)}), 500
+
+@app.route("/check_content", methods=["GET"])
+def check_content():
+    """Check if any content has been extracted."""
     if os.path.exists(JSON_FILE):
         with open(JSON_FILE, "r", encoding="utf-8") as file:
             data = json.load(file)
             if data["webpages"]:
-                retriever = init_ret()
-                result = chat_loop("How many BRO workers are trapped?", retriever)
-                return jsonify({"latest_text": result})
-                # return jsonify({"latest_text": data["webpages"][-1]["text"]})  # Return only the latest
-    return jsonify({"latest_text": "No stored content found."}), 200
+                return jsonify({"content_available": True}), 200
+    return jsonify({"content_available": False}), 200
+
+@app.route("/clear_chat", methods=["POST"])
+def clear_chat():
+    """Clear the chat history."""
+    if os.path.exists(CHAT_HISTORY_FILE):
+        os.remove(CHAT_HISTORY_FILE)
+    return jsonify({"message": "Chat history cleared successfully"}), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

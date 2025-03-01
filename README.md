@@ -9,4 +9,4 @@ Chat with web pages. Information you need, in a flash.
 - Research on what other companies are doing. 
 
 ### Future Work
-- Agentic ai based web tool, users can perform actions on their web browser using queries.polpolpol
+- Agentic ai based web tool, users can perform actions on their web browser using queries.
