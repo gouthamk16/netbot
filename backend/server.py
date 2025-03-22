@@ -5,7 +5,7 @@ import os
 from rag import chat_loop, init_ret
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 JSON_FILE = "data.json"
 CHAT_HISTORY_FILE = "chat_history.json"

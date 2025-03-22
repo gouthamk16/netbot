@@ -57,7 +57,7 @@ function extractText() {
                 let extractedText = results[0].result;
                 sendTextToBackend(extractedText);
             } else {
-                addSystemMessage("⚠️ Failed to extract text from this page.");
+                addSystemMessage("Failed to extract text from this page.");
             }
         });
     });
@@ -78,11 +78,11 @@ function sendTextToBackend(text) {
     .then(response => response.json())
     .then(data => {
         console.log("Text stored:", data);
-        addSystemMessage("✅ Content extracted successfully! You can now ask questions about this webpage.");
+        addSystemMessage("Content extracted successfully! You can now ask questions about this webpage.");
     })
     .catch(error => {
         console.error("Error sending data:", error);
-        addSystemMessage("⚠️ Failed to store text. Please try again.");
+        addSystemMessage("Failed to store text. Please try again.");
     });
 }
 
